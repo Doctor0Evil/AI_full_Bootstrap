@@ -1,0 +1,281 @@
+{
+  "system_assets": {
+    "directories": [
+      {
+        "name": "/system",
+        "description": "Root directory for system-wide configurations and state management",
+        "subdirectories": [
+          {
+            "name": "/system/config",
+            "description": "Centralized configuration storage for all services",
+            "files": [
+              {
+                "name": "redis.conf",
+                "description": "Redis configuration for session storage with CIA-Class-3 security",
+                "content": [
+                  "bind 127.0.0.1",
+                  "requirepass REDIS_SECRET_KEY",
+                  "maxmemory 4gb",
+                  "appendonly yes"
+                ]
+              },
+              {
+                "name": "kafka.properties",
+                "description": "Kafka producer configuration for event streaming",
+                "content": [
+                  "bootstrap.servers=kafka-broker:9092",
+                  "message.timeout.ms=5000",
+                  "compression.type=snappy"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "/system/logs",
+            "description": "Structured logging for compliance and audit trails",
+            "files": [
+              {
+                "name": "audit.log",
+                "description": "Blockchain-anchored audit logs",
+                "content": [
+                  "2025-07-08T20:02:00Z - [UNIFIED] System drift corrected",
+                  "2025-07-08T20:05:00Z - [AI] Quantum encryption validated"
+                ]
+              },
+              {
+                "name": "error.log",
+                "description": "Error tracking with automatic alerting",
+                "content": [
+                  "2025-07-08T20:02:00Z - [ERROR] Compliance check failed",
+                  "2025-07-08T20:05:00Z - [WARNING] Memory leak detected"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "/ai",
+        "description": "AI model training and prediction assets",
+        "subdirectories": [
+          {
+            "name": "/ai/models",
+            "description": "Neural network models and training data",
+            "files": [
+              {
+                "name": "quantum_encryption_model.pt",
+                "description": "PyTorch model for quantum encryption validation",
+                "content": [
+                  "Model architecture: 10 input nodes, 5 hidden layers",
+                  "Training data: 10,000 synthetic encryption samples"
+                ]
+              },
+              {
+                "name": "anomaly_detection.keras",
+                "description": "TensorFlow/Keras model for system drift detection",
+                "content": [
+                  "Input shape: (None, 128)",
+                  "Optimizer: Adam with learning rate 0.001"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "/ai/data",
+            "description": "Training datasets for AI models",
+            "files": [
+              {
+                "name": "network_traffic.csv",
+                "description": "Labeled dataset of normal vs. malicious traffic patterns",
+                "content": [
+                  "timestamp,source,destination,label",
+                  "2025-07-08T20:02:00Z,192.168.1.1,10.0.0.1,normal",
+                  "2025-07-08T20:05:00Z,192.168.1.2,10.0.0.2,malicious"
+                ]
+              },
+              {
+                "name": "compliance_cases.json",
+                "description": "GDPR/HIPAA compliance test cases",
+                "content": [
+                  "{ \"case_id\": \"GDPR-2025-07-08-1955\", \"status\": \"passed\" }",
+                  "{ \"case_id\": \"HIPAA-2025-07-08-1956\", \"status\": \"failed\" }"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "/crypto",
+        "description": "Cryptographic modules and key management",
+        "subdirectories": [
+          {
+            "name": "/crypto/keys",
+            "description": "Quantum-resistant key pairs",
+            "files": [
+              {
+                "name": "vsc_private.key",
+                "description": "Private key for system authentication",
+                "content": [
+                  "-----BEGIN PRIVATE KEY-----",
+                  "MIIJQgIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC6",
+                  "-----END PRIVATE KEY-----"
+                ]
+              },
+              {
+                "name": "vsc_public.key",
+                "description": "Public key for external validation",
+                "content": [
+                  "-----BEGIN PUBLIC KEY-----",
+                  "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAupBQZQIB",
+                  "-----END PUBLIC KEY-----"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "/crypto/certs",
+            "description": "TLS certificates for secure communication",
+            "files": [
+              {
+                "name": "cert.pem",
+                "description": "Server TLS certificate",
+                "content": [
+                  "-----BEGIN CERTIFICATE-----",
+                  "MIID... (4096-bit RSA certificate)",
+                  "-----END CERTIFICATE-----"
+                ]
+              },
+              {
+                "name": "key.pem",
+                "description": "Private key for TLS certificate",
+                "content": [
+                  "-----BEGIN RSA PRIVATE KEY-----",
+                  "MIIEowIBAAKCAQEAu...",
+                  "-----END RSA PRIVATE KEY-----"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "/data_lake",
+        "description": "Centralized data repository for system analytics",
+        "subdirectories": [
+          {
+            "name": "/data_lake/raw",
+            "description": "Raw unprocessed data from virta-net and VSC",
+            "files": [
+              {
+                "name": "network_traffic_20250708.parquet",
+                "description": "Compressed network traffic data",
+                "content": [
+                  "schema: {\"fields\": [{\"name\": \"timestamp\", \"type\": \"string\"}, {\"name\": \"payload_size\", \"type\": \"int\"}]}",
+                  "rows: 1000000"
+                ]
+              },
+              {
+                "name": "system_metrics_20250708.jsonl",
+                "description": "Line-delimited system metrics for Prometheus",
+                "content": [
+                  "{\"cpu_usage\": \"15%\", \"memory_usage\": \"2GB\"}",
+                  "{\"disk_usage\": \"4PB\", \"network_bandwidth\": \"10Gbps\"}"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "/data_lake/processed",
+            "description": "AI-processed data for decision-making",
+            "files": [
+              {
+                "name": "anomaly_patterns.parquet",
+                "description": "Processed anomaly detection results",
+                "content": [
+                  "schema: {\"fields\": [{\"name\": \"pattern_id\", \"type\": \"string\"}, {\"name\": \"confidence\", \"type\": \"float\"}]}",
+                  "rows: 5000"
+                ]
+              },
+              {
+                "name": "compliance_reports.jsonl",
+                "description": "Compliance validation results",
+                "content": [
+                  "{\"report_id\": \"GDPR-2025-07-08-1955\", \"status\": \"passed\"}",
+                  "{\"report_id\": \"HIPAA-2025-07-08-1956\", \"status\": \"failed\"}"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "services": [
+      {
+        "name": "redis-service",
+        "description": "Redis service for session management",
+        "config": {
+          "host": "redis://127.0.0.1:6379",
+          "password": "REDIS_SECRET_KEY",
+          "timeout": "30s"
+        }
+      },
+      {
+        "name": "kafka-service",
+        "description": "Kafka event streaming service",
+        "config": {
+          "brokers": ["kafka-broker-1:9092", "kafka-broker-2:9092"],
+          "topic": "system_events_ai",
+          "compression": "snappy"
+        }
+      },
+      {
+        "name": "vondy-ai",
+        "description": "Vondy AI integration for predictive analytics",
+        "config": {
+          "api_key": "VONDY_API_KEY",
+          "endpoint": "https://api.vondy.ai/v1 "
+        }
+      }
+    ],
+    "variables": {
+      "system": {
+        "VSC_TOKEN": "VSC-ARTEMIS-5E8A2B7C-AC41-4F2B-BD6E-9C3E7A1F4D2E",
+        "PORT": "8080",
+        "KAFKA_BROKERS": "kafka-broker-1:9092,kafka-broker-2:9092"
+      },
+      "security": {
+        "CIA_Class": "CIA-Class-3",
+        "ENCRYPTION": "AES-512/Quantum-Signed"
+      }
+    },
+    "constants": {
+      "MAX_CONCURRENT_TASKS": 10,
+      "SYNC_INTERVAL": "4h",
+      "RETENTION_PERIOD": "7d"
+    },
+    "strings": {
+      "templates": {
+        "event_template": "Event {event_id} processed with AI confidence {confidence}",
+        "error_template": "Error: {module} - {message}"
+      },
+      "compliance": {
+        "gdpr": "General Data Protection Regulation",
+        "hipaa": "Health Insurance Portability and Accountability Act"
+      }
+    },
+    "regex_patterns": {
+      "binary_detection": "[01]{8,}",
+      "morse_code": "[.-]{2,}",
+      "scientific_notation": "\\d+E[+-]?\\d+"
+    },
+    "blockchain": {
+      "contracts": {
+        "InstructionAudit": {
+          "methods": ["logContext", "validateCompliance"],
+          "owner": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+        }
+      }
+    }
+  }
+}
