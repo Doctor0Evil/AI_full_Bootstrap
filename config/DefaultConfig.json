@@ -1,0 +1,57 @@
+{
+  "LogLevel": "INFO",
+  "AutoRebootOnCrash": true,
+  "MaxMemoryUsage": 90,
+  "PreferredLanguage": "en-US",
+  "NetworkTimeout": 30,
+  "EnableDebugMode": false,
+  "AllowedIPs": [
+    "192.168.1.0/24",
+    "10.0.0.0/8"
+  ],
+  "CloudIntegration": {
+    "AWS": {
+      "Enabled": true,
+      "AccessKey": "YOUR_AWS_ACCESS_KEY",
+      "SecretKey": "YOUR_AWS_SECRET_KEY",
+      "Region": "us-east-1"
+    },
+    "Azure": {
+      "Enabled": false,
+      "TenantId": "",
+      "ClientId": "",
+      "ClientSecret": ""
+    },
+    "GoogleAI": {
+      "Enabled": false,
+      "CredentialsFile": "/path/to/credentials.json"
+    }
+  }
+}
+4. config/NetworkSettings.json
+json
+copyCopy code
+{
+  "Hostname": "universal-ai-node",
+  "Interfaces": {
+    "eth0": {
+      "DHCP": true,
+      "StaticIP": null,
+      "Gateway": null,
+      "DNS": ["8.8.8.8", "8.8.4.4"]
+    },
+    "wlan0": {
+      "DHCP": false,
+      "StaticIP": "192.168.1.150",
+      "Gateway": "192.168.1.1",
+      "DNS": ["1.1.1.1"]
+    }
+  },
+  "Proxy": {
+    "Enabled": false,
+    "Address": "",
+    "Port": 0,
+    "Username": "",
+    "Password": ""
+  }
+}
