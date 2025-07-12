@@ -1,5 +1,3 @@
-csharp
-copyCopy code
 using UniversalAISystemBoot.MainLoader;
 
 namespace UniversalAISystemBoot.Plugins.Interfaces
