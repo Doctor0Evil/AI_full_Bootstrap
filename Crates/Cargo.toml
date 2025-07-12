@@ -9,3 +9,64 @@ kafka = "0.13"
 tch = "0.4"
 hyper = "0.14"
 tokio = { version = "1", features = ["full"] }
+# --- Serialization/Deserialization ---
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bincode = "1"
+prost = "0.12"
+protobuf = "3"
+msgpack = "0.3"
+
+# --- Async Runtime & Networking ---
+tokio = { version = "1", features = ["full"] }
+async-std = "1"
+hyper = "1"
+reqwest = { version = "0.12", features = ["json", "blocking", "gzip"] }
+
+# --- Crypto/Security ---
+openssl = "0.10"
+ring = "0.17"
+rustls = "0.23"
+sha2 = "0.10"
+sodiumoxide = "0.2"
+
+# --- System Metrics/Monitoring ---
+sysinfo = "0.30"
+heim = "0.1"
+procfs = "0.16"
+
+# --- Logging ---
+log = "0.4"
+env_logger = "0.11"
+fern = "0.6"
+
+# --- Numerical/AI/ML ---
+ndarray = "0.15"
+nalgebra = "0.32"
+tch = "0.14"
+tract-core = "0.20"
+onnxruntime = "0.0.19"
+
+# --- Database ---
+rusqlite = "0.31"
+redis = "0.25"
+postgres = "0.19"
+
+# --- Messaging/Broker ---
+zmq = "0.10"
+rumqttc = "0.23"
+
+# --- Blockchain/Web3 ---
+web3 = "0.19"
+ethers = "2"
+solidity = "0.2"
+
+# --- CLI/Terminal UI ---
+clap = { version = "4", features = ["derive"] }
+structopt = "0.3"
+termion = "2"
+crossterm = "0.27"
+
+# --- Time/Date ---
+chrono = "0.4"
+time = "0.3"
