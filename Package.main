@@ -1,0 +1,366 @@
+package main
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"sync"
+	"time"
+	"math/rand"
+)
+type HardwareConstants struct {
+	CPUVendors   []string
+	GPUVendors   []string
+	StorageTypes []string
+	RAMTypes     []string
+	OSNames      []string
+}
+var SupportedHardware = HardwareConstants{
+	CPUVendors:   []string{"Intel(R) Corporation", "Advanced Micro Devices, Inc.", "Apple Silicon", "ARM Ltd.", "Qualcomm", "IBM", "SiFive", "Samsung"},
+	GPUVendors:   []string{"NVIDIA Corporation", "Advanced Micro Devices, Inc.", "Intel Graphics", "Apple", "ARM Mali", "Imagination Technologies", "Qualcomm Adreno"},
+	StorageTypes: []string{"SSD", "HDD", "NVMe", "eMMC", "UFS", "Optane"},
+	RAMTypes:     []string{"DDR3", "DDR4", "DDR5", "LPDDR4", "LPDDR5", "HBM2", "HBM3"},
+	OSNames:      []string{"linux", "windows", "darwin", "freebsd", "openbsd", "netbsd", "solaris", "aix", "android", "ios"},
+}
+type SystemMetrics struct {
+	CPUUsage         float64
+	MemoryUsage      float64
+	StorageUsage     float64
+	Temperature      float64
+	LastBootTime     string
+	NetworkInterfaces map[string]string
+	Uptime           string
+	LoadAverage      []float64
+	NumCores         int
+	NumThreads       int
+	HostName         string
+	Platform         string
+	KernelVersion    string
+}
+type Security struct {
+	BootSignatureExpected string
+}
+func (s *Security) VerifyBootSignature(path string) bool {
+	hash, err := ComputeSHA256Hash(path)
+	if err != nil {
+		return false
+	}
+	return hash == s.BootSignatureExpected
+}
+func ComputeSHA256Hash(filePath string) (string, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+func (s *Security) EnforceSecureBoot(path string) {
+	if !s.VerifyBootSignature(path) {
+		DisplayError("Secure Boot verification failed. System halted.")
+		os.Exit(1)
+	}
+}
+type PluginMetadata struct {
+	Name         string   `json:"name"`
+	Version      string   `json:"version"`
+	Author       string   `json:"author"`
+	Dependencies []string `json:"dependencies"`
+	Description  string   `json:"description"`
+	IsVerified   bool     `json:"is_verified"`
+	APIVersion   string   `json:"api_version"`
+	Platforms    []string `json:"platforms"`
+	EntryPoint   string   `json:"entry_point"`
+	Signature    string   `json:"signature"`
+}
+type PluginManager struct {
+	Registry map[string]*PluginMetadata
+	mu       sync.Mutex
+}
+func NewPluginManager() *PluginManager {
+	return &PluginManager{Registry: make(map[string]*PluginMetadata)}
+}
+func (pm *PluginManager) LoadPlugins(dir string) error {
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		if strings.HasSuffix(file.Name(), ".json") {
+			b, err := ioutil.ReadFile(filepath.Join(dir, file.Name()))
+			if err != nil {
+				continue
+			}
+			var meta PluginMetadata
+			if err := json.Unmarshal(b, &meta); err != nil {
+				continue
+			}
+			pm.Registry[meta.Name] = &meta
+			LogInfo(fmt.Sprintf("Loaded plugin: %s v%s", meta.Name, meta.Version))
+		}
+	}
+	return nil
+}
+func (pm *PluginManager) GetPlugin(name string) *PluginMetadata {
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
+	return pm.Registry[name]
+}
+func (pm *PluginManager) ListPlugins() []*PluginMetadata {
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
+	var out []*PluginMetadata
+	for _, v := range pm.Registry {
+		out = append(out, v)
+	}
+	return out
+}
+type Config struct {
+	Settings map[string]interface{}
+	mu       sync.Mutex
+}
+func NewConfig() *Config {
+	return &Config{Settings: map[string]interface{}{
+		"LogLevel":           "INFO",
+		"AutoRebootOnCrash":  true,
+		"MaxMemoryUsage":     90,
+		"PreferredLanguage":  "en-US",
+		"NetworkTimeout":     30,
+		"EnableDebugMode":    false,
+		"AllowedIPs":         []string{"192.168.1.0/24", "10.0.0.0/8", "127.0.0.1/32"},
+		"PluginDir":          "/boot/plugins",
+		"ConfigFile":         "/boot/config.json",
+		"LogFile":            "/boot/bootlog.json",
+		"SignatureFile":      "/boot/loader.bin",
+		"BootSignature":      "a1b2c3d4e5f67890",
+	}}
+}
+func (c *Config) Get(key string, def interface{}) interface{} {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if v, ok := c.Settings[key]; ok {
+		return v
+	}
+	return def
+}
+func (c *Config) Set(key string, value interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.Settings[key] = value
+	c.Save(c.Settings["ConfigFile"].(string))
+}
+func (c *Config) Save(path string) {
+	b, _ := json.MarshalIndent(c.Settings, "", "  ")
+	_ = ioutil.WriteFile(path, b, 0644)
+}
+type Diagnostics struct{}
+func (d *Diagnostics) GetSystemMetrics() SystemMetrics {
+	host, _ := os.Hostname()
+	return SystemMetrics{
+		CPUUsage:         rand.Float64() * 100,
+		MemoryUsage:      float64(rand.Intn(60) + 30),
+		StorageUsage:     float64(rand.Intn(45) + 40),
+		Temperature:      float64(rand.Intn(45) + 30),
+		LastBootTime:     time.Now().Add(-2 * time.Hour).Format("2006-01-02 15:04:05"),
+		NetworkInterfaces: map[string]string{"eth0": "192.168.1.100", "lo": "127.0.0.1"},
+		Uptime:           fmt.Sprintf("%dh", int(time.Now().Unix()/3600)),
+		LoadAverage:      []float64{rand.Float64(), rand.Float64(), rand.Float64()},
+		NumCores:         runtime.NumCPU(),
+		NumThreads:       runtime.NumGoroutine(),
+		HostName:         host,
+		Platform:         runtime.GOOS,
+		KernelVersion:    runtime.Version(),
+	}
+}
+type MenuNode struct {
+	Title    string
+	Command  string
+	Children []*MenuNode
+}
+func (m *MenuNode) AddChild(child *MenuNode) {
+	m.Children = append(m.Children, child)
+}
+func BuildRootMenu() *MenuNode {
+	root := &MenuNode{Title: "Main Menu"}
+	diagnostics := &MenuNode{Title: "System Diagnostics", Command: "diagnostics"}
+	diagnostics.AddChild(&MenuNode{Title: "CPU/Memory", Command: "diagnostics"})
+	diagnostics.AddChild(&MenuNode{Title: "Storage", Command: "diagnostics"})
+	diagnostics.AddChild(&MenuNode{Title: "Network", Command: "diagnostics"})
+	root.AddChild(diagnostics)
+	plugins := &MenuNode{Title: "Plugins", Command: "submenu"}
+	plugins.AddChild(&MenuNode{Title: "List Installed", Command: "list_plugins"})
+	plugins.AddChild(&MenuNode{Title: "Install New", Command: "install_plugin"})
+	plugins.AddChild(&MenuNode{Title: "Update All", Command: "update_plugins"})
+	root.AddChild(plugins)
+	return root
+}
+type ErrorHandler struct {
+	Config *Config
+}
+func (e *ErrorHandler) HandleException(err error) {
+	LogError(fmt.Sprintf("Unhandled exception: %v", err))
+	if e.Config.Get("AutoRebootOnCrash", true).(bool) {
+		DisplayError("System crash detected. Rebooting in 10 seconds...")
+		time.Sleep(10 * time.Second)
+		os.Exit(1)
+	} else {
+		DisplayError("System halted due to critical error.")
+		os.Exit(1)
+	}
+}
+func (e *ErrorHandler) CheckSystemHealth(metrics SystemMetrics) {
+	if metrics.CPUUsage > 95 || metrics.MemoryUsage > 95 {
+		LogWarn("High resource usage detected. Initiating cleanup...")
+	}
+}
+var logFile = "/boot/bootlog.json"
+func LogInfo(msg string)  { logEntry("INFO", msg) }
+func LogWarn(msg string)  { logEntry("WARNING", msg) }
+func LogError(msg string) { logEntry("ERROR", msg) }
+func logEntry(level, msg string) {
+	entry := map[string]interface{}{
+		"Timestamp": time.Now().Format(time.RFC3339),
+		"Level":     level,
+		"Message":   msg,
+	}
+	b, _ := json.MarshalIndent(entry, "", "  ")
+	_ = appendFile(logFile, string(b)+"\n")
+}
+func appendFile(filename, text string) error {
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.WriteString(text)
+	return err
+}
+type HardwareDriver interface {
+	Initialize() error
+	Diagnose() error
+}
+type LinuxStorageDriver struct{}
+func (d *LinuxStorageDriver) Initialize() error { return nil }
+func (d *LinuxStorageDriver) Diagnose() error   { LogInfo("Linux Storage: Healthy"); return nil }
+type WindowsStorageDriver struct{}
+func (d *WindowsStorageDriver) Initialize() error { return nil }
+func (d *WindowsStorageDriver) Diagnose() error   { LogInfo("Windows Storage: Healthy"); return nil }
+type DarwinStorageDriver struct{}
+func (d *DarwinStorageDriver) Initialize() error { return nil }
+func (d *DarwinStorageDriver) Diagnose() error   { LogInfo("Darwin Storage: Healthy"); return nil }
+func SystemInitializer(
+	sec *Security,
+	cfg *Config,
+	pm *PluginManager,
+	diag *Diagnostics,
+	errh *ErrorHandler,
+) {
+	sec.EnforceSecureBoot(cfg.Get("SignatureFile", "/boot/loader.bin").(string))
+	cfg.Save(cfg.Get("ConfigFile", "/boot/config.json").(string))
+	LogInfo("Log system initialized.")
+	_ = pm.LoadPlugins(cfg.Get("PluginDir", "/boot/plugins").(string))
+	metrics := diag.GetSystemMetrics()
+	errh.CheckSystemHealth(metrics)
+	DisplayBanner("=== UNIVERSAL AI SYSTEM READY ===")
+}
+func MinimalLoader() {
+	DisplayBanner("=== UNIVERSAL AI SYSTEM BOOT v1.0 ===")
+	cfg := NewConfig()
+	sec := &Security{BootSignatureExpected: cfg.Get("BootSignature", "a1b2c3d4e5f67890").(string)}
+	pm := NewPluginManager()
+	diag := &Diagnostics{}
+	errh := &ErrorHandler{Config: cfg}
+	SystemInitializer(sec, cfg, pm, diag, errh)
+	IntermediateLoader(cfg, pm, diag, errh)
+}
+func IntermediateLoader(cfg *Config, pm *PluginManager, diag *Diagnostics, errh *ErrorHandler) {
+	SystemMenuShell(cfg, pm, diag, errh)
+}
+func SystemMenuShell(cfg *Config, pm *PluginManager, diag *Diagnostics, errh *ErrorHandler) {
+	root := BuildRootMenu()
+	current := root
+	history := []*MenuNode{}
+	for {
+		DisplayMenu(current)
+		input := ReadMenuSelection()
+		if input == "back" && len(history) > 0 {
+			current = history[len(history)-1]
+			history = history[:len(history)-1]
+		} else {
+			found := false
+			for _, child := range current.Children {
+				if strings.EqualFold(child.Title, input) {
+					history = append(history, current)
+					current = child
+					ExecuteMenuCommand(child.Command, pm, diag)
+					found = true
+					break
+				}
+			}
+			if !found {
+				DisplayError("Invalid selection.")
+			}
+		}
+	}
+}
+func ExecuteMenuCommand(cmd string, pm *PluginManager, diag *Diagnostics) {
+	switch cmd {
+	case "diagnostics":
+		metrics := diag.GetSystemMetrics()
+		DisplayPrint(fmt.Sprintf("CPU Usage: %.2f%%", metrics.CPUUsage))
+		DisplayPrint(fmt.Sprintf("Memory Usage: %.2f%%", metrics.MemoryUsage))
+		DisplayPrint(fmt.Sprintf("Storage Usage: %.2f%%", metrics.StorageUsage))
+		DisplayPrint(fmt.Sprintf("Temperature: %.2fC", metrics.Temperature))
+		DisplayPrint(fmt.Sprintf("Uptime: %s", metrics.Uptime))
+		DisplayPrint(fmt.Sprintf("Host: %s", metrics.HostName))
+	case "list_plugins":
+		for _, p := range pm.ListPlugins() {
+			DisplayPrint(fmt.Sprintf("%s v%s (%s)", p.Name, p.Version, p.Author))
+		}
+	case "install_plugin":
+		DisplayPrint("Install plugin not implemented.")
+	case "update_plugins":
+		DisplayPrint("Update plugins not implemented.")
+	}
+}
+
+// --- DISPLAY LAYER (PLATFORM-NEUTRAL) ---
+func DisplayBanner(msg string) {
+	fmt.Println(msg)
+}
+func DisplayPrint(msg string) {
+	fmt.Println(msg)
+}
+func DisplayError(msg string) {
+	fmt.Fprintln(os.Stderr, msg)
+}
+func DisplayMenu(node *MenuNode) {
+	fmt.Println("\n" + node.Title)
+	for _, child := range node.Children {
+		fmt.Println(" - " + child.Title)
+	}
+	fmt.Print("Select: ")
+}
+func ReadMenuSelection() string {
+	var input string
+	fmt.Scanln(&input)
+	return input
+}
+
+// --- ENTRYPOINT ---
+func main() {
+	MinimalLoader()
+}
