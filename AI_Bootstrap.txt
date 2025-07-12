@@ -1,0 +1,67 @@
+├── bootloader/                         # Core bootloader stages and system startup
+│   ├── minimal_loader/                 # Stage 1: Immutable ROM/BIOS loader
+│   │   ├── MinimalLoader.cs            # MinimalLoader entry point, hardware detect & init
+│   │   ├── Security.cs                 # Boot signature verification
+│   │   └── Platform.cs                 # Platform detection & flags
+│   │
+│   ├── intermediate_loader/            # Stage 2: Memory setup and transition
+│   │   ├── IntermediateLoader.cs       # Launches main menu shell
+│   │   ├── Memory.cs                   # Stack, heap, cache setup
+│   │   └── Capability.cs               # Feature detection/adaptation
+│   │
+│   └── main_loader/                    # Stage 3: Menu shell and AI system interface
+│       ├── SystemMenuShell.cs          # Menu-driven shell logic
+│       ├── MenuBuilder.cs              # Menu structure and dynamic building
+│       ├── MenuNode.cs                 # Menu node and command definitions
+│       ├── Display.cs                  # Rich console/UI output helpers
+│       ├── Input.cs                    # Abstracted input handling
+│       └── CommandExecutor.cs          # Executes menu commands securely
+│
+├── plugins/                           # Plugin system for AI extensions and features
+│   ├── PluginManager.cs                # Plugin discovery, loading, verification
+│   ├── PluginMetadata.cs               # Plugin metadata and dependency info
+│   ├── SamplePlugin/                   # Example plugin project
+│   │   ├── SamplePlugin.cs             # Implements IPlugin interface
+│   │   └── PluginCommands.cs           # Plugin-specific menu commands
+│   └── Interfaces/                     # Plugin interfaces and contracts
+│       └── IPlugin.cs                  # Plugin interface definition
+│
+├── security/                          # Security features and enforcement
+│   ├── SecureBoot.cs                   # Cryptographic boot verification
+│   ├── CodeReproductionGuard.cs       # Detect & block code reproduction attempts
+│   ├── Authentication.cs              # Multi-stage auth (password, TPM, enclave)
+│   └── EncryptionUtils.cs              # Hashing, signature helpers
+│
+├── diagnostics/                      # System health, resource monitoring, logging
+│   ├── Diagnostics.cs                 # Collects CPU, memory, storage, temp metrics
+│   ├── NetworkDiagnostics.cs          # Network interfaces, connectivity checks
+│   ├── LogSystem.cs                   # Structured JSON logging and rotation
+│   └── ErrorHandler.cs                # Exception handling and recovery
+│
+├── drivers/                          # Hardware abstraction layers for cross-platform support
+│   ├── LinuxStorageDriver.cs           # Linux-specific storage driver
+│   ├── WindowsStorageDriver.cs         # Windows-specific storage driver
+│   ├── GenericCpuDriver.cs             # CPU driver abstraction
+│   └── GpuDriver.cs                    # GPU driver abstraction
+│
+├── config/                           # Configuration management and persistence
+│   ├── Config.cs                      # Dynamic config loading, saving, validation
+│   └── DefaultConfig.json             # Default system config template
+│
+├── utils/                           # Utility helpers and common functions
+│   ├── Utils.cs                      # Size formatting, IP validation, etc.
+│   ├── StringHelpers.cs              # String manipulation utilities
+│   └── TimeHelpers.cs                # Time formatting, uptime calculations
+│
+├── shell/                           # Command shell enforcing AI operational scope
+│   ├── SystemShell.cs                # Interactive command shell with restrictions
+│   ├── CommandFilter.cs              # Allowed commands and reproduction block
+│   └── MenuNavigator.cs              # Menu navigation logic for shell
+│
+├── tests/                           # Unit and integration tests
+│   ├── BootloaderTests.cs            # Tests for bootloader stages and auth
+│   ├── PluginManagerTests.cs         # Plugin loading and dependency tests
+│   ├── SecurityTests.cs              # Secure boot and reproduction guard tests
+│   └── MenuShellTests.cs             # Menu navigation and command execution tests
+│
+└── README.md                        # Project overview, build & usage instructions
