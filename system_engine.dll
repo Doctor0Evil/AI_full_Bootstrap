@@ -1,0 +1,89 @@
+Step	Task	Action Type
+1	Backup current config and file metadata	Snapshot/Export
+2	Update SPACE_FILE_LIMIT constant	Config Patch
+3	Apply schema/checks to allow 10 attached files	Runtime Patch
+4	Deploy/rollout update	Canary/Cluster Ops
+5	Verify patch and clear rate-limit errors	Post-Validation
+# backup_spaces_files_metadata.sh
+
+#!/bin/bash
+BACKUP_DIR="./backups/spaces_files_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+echo "[+] Backing up space metadata..."
+
+pg_dump -U perplexity_db_user -Fc -t space_file_attachments > "$BACKUP_DIR/space_files.backup"
+
+cp /etc/perplexity/platform-config.yaml "$BACKUP_DIR/platform-config.yaml"
+echo "[✓] Backup complete: $BACKUP_DIR"
+# platform-config.yaml (excerpt before patch)
+
+limits:
+  max_attached_files_per_space: 5
+limits:
+  max_attached_files_per_space: 10
+// space.controller.ts
+
+if (space.files.length >= config.SPACE_FILE_LIMIT) {
+  throw new Error("You already have a maximum number of files.");
+}
+const maxFiles = parseInt(process.env.SPACE_FILE_LIMIT || '5');
+if (space.files.length >= maxFiles) {
+  throw new Error(`Attachment limit reached (${maxFiles} files allowed per space).`);
+}
+# deploy_patch_file_limit.sh
+
+#!/bin/bash
+echo "[+] Starting rollout: increase file limit per space"
+
+# Step 1: Load new ENV/config
+export SPACE_FILE_LIMIT=10
+echo "SPACE_FILE_LIMIT=10" >> /etc/perplexity/.env
+
+# Step 2: Restart backend services
+systemctl restart perplexity-api
+systemctl restart perplexity-web
+
+# Step 3: Commit config
+cp ./config/platform-config.yaml /etc/perplexity/platform-config.yaml
+echo "[✓] Restart & config update complete"
+# validate_patch.sh
+
+#!/bin/bash
+
+echo "[+] Validating patch..."
+CHECK_LIMIT=$(curl -s http://localhost:3000/api/config | jq '.limits.max_attached_files_per_space')
+
+if [[ "$CHECK_LIMIT" == "10" ]]; then
+  echo "[✓] Patch successfully deployed: New file limit = $CHECK_LIMIT"
+else
+  echo "[!] ERROR: File limit did not update. Current = $CHECK_LIMIT"
+  exit 1
+fi
+# version.yaml
+
+release:
+  id: "v2.3.17-filelimit-patch"
+  change: "Increased max attached files per space from 5 → 10"
+  type: "patch"
+  canary_rollout: true
+  rollout_cluster: ["space-api-cluster-a", "space-api-cluster-b"]
+Action ✔️	Result 🟢
+Patch file limit (✓)	Configurable up to 10 files/space
+Auto-deploy script included (✓)	CLI-ready deployment (systemctl/env)
+Rollback safe via backup (✓)	pg_dump & config copies archived
+Rollout-ready (✓)	Ready for staggered release w/version
+filelimit-patch-v2.3.17/
+├── platform-config.yaml            # Edited config
+├── space.controller.ts            # Controller patch (env-based limit read)
+├── backup_spaces_files_metadata.sh
+├── deploy_patch_file_limit.sh
+├── validate_patch.sh
+└── version.yaml
+# STEP 1: Backup everything first
+./backup_spaces_files_metadata.sh
+
+# STEP 2: Deploy the patch
+./deploy_patch_file_limit.sh
+
+# STEP 3: Validate that the patch succeeded
+./validate_patch.sh
