@@ -1,0 +1,20 @@
+Action:
+Provide two cohorts (control: text-only, experimental: with visual aids) with XSM memory model tutorials.
+Action:
+Collect application traces (from modern apps, e.g., web browsers/cache, logs, media renderers).
+Action:
+Systematically test and document the effect of relaxing each user mode restriction (registers/instructions) in XSM by intentional misconfiguration.
+Action:
+Design a synthetic workload for simultaneous user file creation/deletion in flat (root) vs. tree (UNIX) directories.
+Action:
+Design a file access path simulator for eXpFS (fixed inode) and UNIX FS (dynamic inode blocks/tree walk).
+Action:
+Create and distribute user-facing diagrams of the XSM virtual address translation process, mapping:
+Action:
+Enumerate all privileged instructions/registers of XSM.
+Action:
+Identify complex, real-world application use cases (e.g., database, video editing, backup, etc.).
+Action:
+Model and evaluate a multi-user environment on eXpFS’s flat (root-file-only) directory.
+Action:
+Quantitatively compare the file access latency in eXpFS (where inode lookup is at fixed disk blocks 3–4) to UNIX FS (where inode blocks may be dynamically located), using trace-driven simulation or timing analysis.
