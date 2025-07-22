@@ -1,0 +1,118 @@
+[package]
+name = "mesh_bioai_system"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <you@your.domain>"]
+description = "Unified AI+Bioinformatics+Mesh+Firmware Rust system"
+license = "MIT"
+
+[dependencies]
+# AI + LLM
+async-openai = "0.20"
+
+# Hardware Monitoring
+sysinfo = "0.30"
+
+# Security / Firmware
+sha2 = "0.10"
+anyhow = "1.0"
+
+# Mesh Networking
+libp2p = { version = "0.53", features = ["gossipsub", "tcp-tokio", "noise", "yamux"] }
+
+# Bioinformatics
+bio = "1.3"
+
+# Neural Simulation / Random Input
+rand = "0.8"
+
+# Machine Learning
+rusty-machine = "0.5.4"
+
+# Deep Learning Framework (optional)
+burn = { version = "0.12", features = ["ndarray"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+[package]
+name = "neuron-mesh"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+libp2p = { version = "0.53", features = ["gossipsub", "tcp-tokio", "noise", "yamux"] }
+tokio = { version = "1", features = ["full"] }
+rand = "0.8"
+
+[package]
+name = "bio-ai-chat"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-openai = "0.20"
+tokio = { version = "1", features = ["full"] }
+bio = "1.3"
+anyhow = "1.0"
+
+[package]
+name = "local-ml"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rusty-machine = "0.5.4"
+burn = { version = "0.12", features = ["ndarray"] }
+
+
+
+[dependencies]
+
+# === 🧠 Asynchronous & System Integration ===
+tokio = { version = "1", features = ["full"] }      # async runtime
+anyhow = "1.0"                                       # ergonomic error handling, Result<T, anyhow::Error>
+
+# === 🤖 Machine Learning / Embedding / AI ===
+async-openai = "0.20"                               # OpenAI Chat/LLM API (GPT-4, GPT-4o, etc)
+rusty-machine = "0.5.4"                             # classic ML models — linear regression, classification
+burn = { version = "0.12", features = ["ndarray"] } # deep learning framework: tensors, models, etc
+
+# === 🧬 Bioinformatics Processing ===
+bio = "1.3"                                          # FASTA, FASTQ, GTF, alignment tools
+
+# === 🔒 System Security / Crypto / Firmware ===
+sha2 = "0.10"                                        # SHA-256 hashing for firmware/image signatures
+
+# === ⚙️ Hardware Monitoring ===
+sysinfo = "0.30"                                     # RAM, CPU, disk, temperature, etc
+
+# === 🌐 Mesh Networking / Neuron Messaging ===
+libp2p = { version = "0.53", features = ["gossipsub", "tcp-tokio", "noise", "yamux"] }
+
+# === 🔁 Miscellaneous Core Utilities ===
+rand = "0.8"                                         # RNG for neural input firing
+serde = { version = "1.0", features = ["derive"] }   # basic serialization
+serde_json = "1.0"
+log = "0.4"                                           # logging abstraction (optional)
+env_logger = "0.11"                                  # enables logging via env vars
+
+# === (Optional) For WebAssembly Integration ===
+# wasmtime = "20.0.1"                                # if you’re sandboxing WASM interfaces
+FeatureAdd This Crate
+WebAssembly sandbox (WASI)
+wasmtime, wasmer, or wasi-cap-std
+gRPC with tonic
+tonic = "0.10" + prost
+GUI dashboard
+eframe/egui, iced, or fltk
+Embedded support (e.g., RPi)
+rppal, embedded-hal
+Dashboards/logs (TUI)
+tui, ratatui, crossterm
+Image/sequence I/O
+image, ndarray-npy, niffler, hdf5
+[package]
+build = "build.rs"  # Optional for codegen, WASM, or FFI integration
+cargo build
+cargo build --release
+cargo run
