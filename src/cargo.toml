@@ -58,24 +58,6 @@ libp2p = { version = "0.53", features = ["gossipsub", "tcp-tokio", "noise", "yam
 rand = "0.8"                                         
 serde = { version = "1.0", features = ["derive"] }  
 serde_json = "1.0"
-log = "0.4"                                           # logging abstraction (optional)
-env_logger = "0.11"                                  # enables logging via env vars
+log = "0.4"                                           
+env_logger = "0.11"                              
 # wasmtime = "20.0.1"                         
-FeatureAdd This Crate
-WebAssembly sandbox (WASI)
-wasmtime, wasmer, or wasi-cap-std
-gRPC with tonic
-tonic = "0.10" + prost
-GUI dashboard
-eframe/egui, iced, or fltk
-Embedded support (e.g., RPi)
-rppal, embedded-hal
-Dashboards/logs (TUI)
-tui, ratatui, crossterm
-Image/sequence I/O
-image, ndarray-npy, niffler, hdf5
-[package]
-build = "build.rs"  # Optional for codegen, WASM, or FFI integration
-cargo build
-cargo build --release
-cargo run
