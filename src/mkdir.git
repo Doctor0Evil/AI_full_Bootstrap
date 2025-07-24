@@ -1,0 +1,12 @@
+mkdir -p .github/workflows
+mkdir -p src/{core,security,ai,fs,compliance,integrity,schema,boot,bin,hal,drivers}
+mkdir -p build-scripts
+mkdir -p config
+mkdir -p contracts
+mkdir -p diagnostics
+mkdir -p drivers
+mkdir -p network/cloud
+mkdir -p plugins/{ExtendedPluginExample,Interfaces,SamplePlugin}
+mkdir -p security/audit
+mkdir -p shell/UI
+mkdir -p tests
