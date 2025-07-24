@@ -3,3 +3,79 @@ name = "mesh_sec_ai_boot"
 version = "0.1.0"
 edition = "2021"
 [dependencies]
+[package]
+name = "mesh_bioai_system"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <you@your.domain>"]
+description = "Unified AI+Bioinformatics+Mesh+Firmware Rust system"
+license = "MIT"
+[dependencies]
+async-openai = "0.20"
+sysinfo = "0.30"
+sha2 = "0.10"
+anyhow = "1.0"
+libp2p = { version = "0.53", features = ["gossipsub", "tcp-tokio", "noise", "yamux"] }
+bio = "1.3"
+rand = "0.8"
+rusty-machine = "0.5.4"
+burn = { version = "0.12", features = ["ndarray"] }
+tokio = { version = "1", features = ["full"] }
+[package]
+name = "neuron-mesh"
+version = "0.1.0"
+edition = "2021"
+[dependencies]
+libp2p = { version = "0.53", features = ["gossipsub", "tcp-tokio", "noise", "yamux"] }
+tokio = { version = "1", features = ["full"] }
+rand = "0.8"
+[package]
+name = "bio-ai-chat"
+version = "0.1.0"
+edition = "2021"
+[dependencies]
+async-openai = "0.20"
+tokio = { version = "1", features = ["full"] }
+bio = "1.3"
+anyhow = "1.0"
+[package]
+name = "local-ml"
+version = "0.1.0"
+edition = "2021"
+[dependencies]
+rusty-machine = "0.5.4"
+burn = { version = "0.12", features = ["ndarray"] }
+[dependencies]
+tokio = { version = "1", features = ["full"] }    
+anyhow = "1.0"                                       
+async-openai = "0.20"                               
+rusty-machine = "0.5.4"                             
+burn = { version = "0.12", features = ["ndarray"] } 
+bio = "1.3"                                          
+sha2 = "0.10"                                        
+sysinfo = "0.30"                                  
+libp2p = { version = "0.53", features = ["gossipsub", "tcp-tokio", "noise", "yamux"] }
+rand = "0.8"                                         
+serde = { version = "1.0", features = ["derive"] }  
+serde_json = "1.0"
+log = "0.4"                                           # logging abstraction (optional)
+env_logger = "0.11"                                  # enables logging via env vars
+# wasmtime = "20.0.1"                         
+FeatureAdd This Crate
+WebAssembly sandbox (WASI)
+wasmtime, wasmer, or wasi-cap-std
+gRPC with tonic
+tonic = "0.10" + prost
+GUI dashboard
+eframe/egui, iced, or fltk
+Embedded support (e.g., RPi)
+rppal, embedded-hal
+Dashboards/logs (TUI)
+tui, ratatui, crossterm
+Image/sequence I/O
+image, ndarray-npy, niffler, hdf5
+[package]
+build = "build.rs"  # Optional for codegen, WASM, or FFI integration
+cargo build
+cargo build --release
+cargo run
