@@ -1,0 +1,578 @@
+#!/bin/bash
+
+# --- AI_full_Bootstrap Master Setup Script ---
+# This script compiles information from various GitHub commit documents to set up the
+# Doctor0Evil/AI_full_Bootstrap project structure and key Rust files.
+# It aims to reflect the project as described across the provided documentation.
+
+echo "--- Initializing AI_full_Bootstrap Project Setup ---"
+echo "This script will create directories and populate Rust source files, Cargo.toml, etc."
+echo "It assumes a Linux-like environment for permissions and GPG/IPFS commands."
+echo ""
+
+# --- 0. Prerequisites and Environment Check ---
+echo "0. Checking for necessary tools (Rust/Cargo, GPG, IPFS)..."
+if ! command -v cargo &> /dev/null; then
+    echo "  - Rust and Cargo not found. Please install via rustup: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+    exit 1
+fi
+if ! command -v gpg &> /dev/null; then
+    echo "  - GnuPG not found. Please install: sudo apt install gnupg"
+    # Not exiting, as GPG is only for one specific module
+fi
+if ! command -v ipfs &> /dev/null; then
+    echo "  - IPFS command not found. Please install go-ipfs or IPFS Desktop: https://ipfs.tech/docs/install/"
+    # Not exiting, as IPFS is only for one specific module
+fi
+echo "  - Basic tool check complete."
+echo ""
+
+# Create project root directory if not already in one
+PROJECT_ROOT="AI_full_Bootstrap"
+if [ ! -d "$PROJECT_ROOT" ]; then
+    echo "Creating project root directory: $PROJECT_ROOT"
+    mkdir "$PROJECT_ROOT"
+fi
+cd "$PROJECT_ROOT" || { echo "Failed to change directory to $PROJECT_ROOT"; exit 1; }
+
+# --- 1. Project Directory Structure (from Create mkdirgit...) ---
+echo "1. Creating project directory structure..."
+mkdir -p .github/workflows
+mkdir -p src/{core,security,ai,fs,compliance,integrity,schema,boot,bin,hal,drivers}
+mkdir -p build-scripts
+mkdir -p config
+mkdir -p contracts
+mkdir -p diagnostics
+mkdir -p drivers
+mkdir -p network/cloud
+mkdir -p plugins/{ExtendedPluginExample,Interfaces,SamplePlugin}
+mkdir -p security/audit
+mkdir -p shell/UI
+mkdir -p tests
+mkdir -p docs # From readme.txt
+mkdir -p System # From GitHub - Doctor0EvilAI_full_Bootstrap.pdf page 1
+mkdir -p accesscontrol # From GitHub - Doctor0EvilAI_full_Bootstrap.pdf page 1
+mkdir -p bootloader # From GitHub - Doctor0EvilAI_full_Bootstrap.pdf page 1
+mkdir -p Crates # From GitHub - Doctor0EvilAI_full_Bootstrap.pdf page 1
+echo "  - Created core directories."
+echo ""
+
+# --- 2. Populate src/schema.rs (from Create schemars Doctor0EvilAI_full_Bootstrap5efe6db GitHub.pdf) ---
+echo "2. Creating src/schema.rs..."
+cat << 'EOF' > src/schema.rs
+pub struct BootConfig {
+    pub enforcement: EnforcementLayer,
+    pub ai_models: Vec<AIModelDescriptor>,
+    pub filesystem: FileSystemConfig,
+    pub compliance: ComplianceConfig,
+}
+
+pub struct EnforcementLayer {
+    pub restrict_shell: bool,
+    pub lock_resources: bool,
+    pub harden_kernel: bool,
+}
+
+pub struct AIModelDescriptor {
+    pub name: &'static str,
+    pub version: &'static str,
+    pub security_level: u8,
+    pub isolated: bool,
+}
+
+pub struct FileSystemConfig {
+    pub mount_at: &'static str,
+    pub encryption: CryptoProfile,
+}
+
+// Placeholder for CryptoProfile as it's referenced but not defined in schema.rs commit.
+// ComplianceConfig is defined here as per the document.
+pub struct CryptoProfile;
+
+pub struct ComplianceConfig {
+    pub gdpr: bool,
+    pub ccpa: bool,
+    pub audit_log: bool,
+}
+EOF
+echo "  - src/schema.rs created."
+echo ""
+
+# --- 3. Populate src/security.rs (from Create securityrs Doctor0EvilAI_full_Bootstrap0cf3fb2 GitHub.pdf) ---
+echo "3. Creating src/security.rs..."
+cat << 'EOF' > src/security.rs
+use crate::schema::EnforcementLayer;
+
+pub fn validate_firmware() -> Result<(), String> {
+    println!("🛡️ Validating firmware signature via TPM...");
+    Ok(())
+}
+
+pub fn enforce(layer: &EnforcementLayer) -> Result<(), String> {
+    if layer.lock_resources { println!(" Resource lock"); }
+    if layer.restrict_shell { println!("🚫 Shell restricted"); }
+    if layer.harden_kernel { println!("🧬 Kernel hardening"); }
+    Ok(())
+}
+EOF
+echo "  - src/security.rs created."
+echo ""
+
+# --- 4. Populate src/compliance.rs (from Create compliancers Doctor0EvilAI_full_Bootstrapfadda81 GitHub.pdf) ---
+echo "4. Creating src/compliance.rs..."
+cat << 'EOF' > src/compliance.rs
+use crate::schema::ComplianceConfig;
+
+pub fn apply(cfg: &ComplianceConfig) -> Result<(), String> {
+    println!("⚖️ Compliance:");
+    if cfg.gdpr { println!(" GDPR"); }
+    if cfg.ccpa { println!(" CCPA"); }
+    if cfg.audit_log { println!(" 📜 Auditing"); }
+    Ok(())
+}
+EOF
+echo "  - src/compliance.rs created."
+echo ""
+
+# --- 5. Populate src/kernel_fingerprint.rs (from Create kernel_fingerprintrs Doctor0EvilAI_full_Bootstrapfc1c6ad GitHub.pdf) ---
+echo "5. Creating src/kernel_fingerprint.rs..."
+# Create a dummy directory and file for the fingerprinting module to operate on
+mkdir -p rust_master_system
+echo "This is a dummy kernel file content for fingerprinting demonstration." > rust_master_system/dummy_kernel_file.txt
+echo "  - Created dummy system for kernel fingerprinting: rust_master_system/dummy_kernel_file.txt"
+
+cat << 'EOF' > src/kernel_fingerprint.rs
+use sha2::{Sha512, Digest};
+use std::{
+    fs::{self, File},
+    io::{self, Read, Write},
+    path::Path,
+    process::Command,
+    time::Duration,
+};
+use tokio::time::sleep;
+use anyhow::{Result, Context};
+use walkdir;
+use hex;
+use chrono::Utc; // Used for audit logging
+
+const STATE_HASH_PATH: &str = "/secure/state_hashes/vsc_master_kernel_fingerprint.sha512";
+const ENCRYPTED_HASH_PATH: &str = "/secure/state_hashes/vsc_master_kernel_fingerprint.sha512.gpg";
+const LATEST_IPFS_CID_PATH: &str = "/secure/state_hashes/_latest_ipfs_fingerprint.cid";
+const AUDIT_LOG_PATH: &str = "/secure/logs/kernel_resource_enforcement.log";
+
+/// Recursively read files in directory, compute SHA-512 fingerprint of concatenated sorted hashes.
+fn generate_sha512_fingerprint<P: AsRef<Path>>(directory: P) -> Result<String> {
+    let mut hashes = Vec::new();
+
+    for entry in walkdir::WalkDir::new(directory) {
+        let entry = entry?;
+        if entry.file_type().is_file() {
+            let mut file = File::open(entry.path())?;
+            let mut hasher = Sha512::new();
+            let mut buffer = [0u8; 8192];
+            loop {
+                let n = file.read(&mut buffer)?;
+                if n == 0 { break; }
+                hasher.update(&buffer[..n]);
+            }
+            let hash_result = hasher.finalize_reset();
+            hashes.push((entry.path().to_owned(), hex::encode(hash_result)));
+        }
+    }
+    // Sort by path to ensure consistency
+    hashes.sort_by_key(|(path, _)| path.clone());
+
+    // Concatenate hashes only
+    let concat = hashes.iter().map(|(_, h)| h.clone()).collect::<String>();
+    let mut final_hasher = Sha512::new();
+    final_hasher.update(concat.as_bytes());
+    Ok(hex::encode(final_hasher.finalize()))
+}
+
+/// Write fingerprint to file with strict permissions.
+fn write_fingerprint_to_file(fingerprint: &str) -> io::Result<()> {
+    fs::create_dir_all(Path::new(STATE_HASH_PATH).parent().unwrap())?;
+    let mut file = File::create(STATE_HASH_PATH)?;
+    file.write_all(fingerprint.as_bytes())?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::set_permissions(STATE_HASH_PATH, fs::Permissions::from_mode(0o600))?;
+    }
+    Ok(())
+}
+
+/// Encrypt fingerprint file symmetrically using AES256 via GPG CLI.
+fn encrypt_fingerprint_file() -> Result<()> {
+    println!("  - GPG will prompt for a passphrase. Enter one and remember it.");
+    let status = Command::new("gpg")
+        .arg("--batch")
+        .arg("--yes")
+        .arg("--symmetric")
+        .arg("--output")
+        .arg(ENCRYPTED_HASH_PATH)
+        .arg(STATE_HASH_PATH)
+        .status()
+        .context("Failed to run gpg command. Make sure GnuPG is installed.");
+
+    if status?.success() {
+        Ok(())
+    } else {
+        anyhow::bail!("GPG encryption failed. Check GnuPG installation and permissions.");
+    }
+}
+
+/// Check if IPFS is installed.
+fn ensure_ipfs_installed() -> Result<()> {
+    Command::new("ipfs")
+        .arg("version")
+        .output()
+        .context("IPFS command not found. Please install IPFS (go-ipfs or IPFS Desktop).")?;
+    Ok(())
+}
+
+/// Start IPFS daemon in the background if not already running.
+async fn start_ipfs_daemon() -> Result<()> {
+    // Check if daemon is already running
+    let output = Command::new("ipfs")
+        .arg("swarm")
+        .arg("peers")
+        .output();
+
+    if let Ok(out) = output {
+        if out.status.success() {
+            println!("[+] IPFS Daemon already running.");
+            return Ok(());
+        }
+    }
+
+    println!("[+] Starting IPFS daemon...");
+    Command::new("ipfs")
+        .arg("daemon")
+        .arg("--init") // Initialize if not already
+        .spawn()
+        .context("Failed to start IPFS daemon. Ensure IPFS is installed and configured.")?;
+
+    // Give daemon some time to start
+    sleep(Duration::from_secs(5)).await;
+    Ok(())
+}
+
+/// Add file to IPFS and return CID.
+fn ipfs_add(path: &str) -> Result<String> {
+    let output = Command::new("ipfs")
+        .arg("add")
+        .arg("-Q") // print only hash
+        .arg(path)
+        .output()
+        .context("Failed to run ipfs add")?;
+
+    if !output.status.success() {
+        anyhow::bail!("ipfs add failed with stderr: {}", String::from_utf8_lossy(&output.stderr));
+    }
+    let cid = String::from_utf8(output.stdout)?.trim().to_string();
+    Ok(cid)
+}
+
+/// Write last CID to marker file.
+fn write_latest_ipfs_cid(cid: &str) -> io::Result<()> {
+    fs::write(LATEST_IPFS_CID_PATH, cid)
+}
+
+/// Append event log with timestamp.
+fn append_to_audit_log(fingerprint: &str, cid: &str) -> io::Result<()> {
+    let timestamp = Utc::now().to_rfc3339();
+    let log_entry = format!(
+        "[{}] Kernel Fingerprint Encrypted & IPFS Synced: HASH={} | CID={}\n",
+        timestamp, fingerprint, cid
+    );
+    fs::create_dir_all(Path::new(AUDIT_LOG_PATH).parent().unwrap())?;
+    fs::OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(AUDIT_LOG_PATH)?
+        .write_all(log_entry.as_bytes())?;
+    Ok(())
+}
+
+/// Main orchestration encompassing fingerprint generation, encryption, IPFS syncing, and logging.
+#[tokio::main]
+async fn main() -> Result<()> {
+    println!("╔═════════════════════════════════════════════════════════════════╗");
+    println!("║ ENCRYPTION + IPFS-SYNC: KERNEL FINGERPRINT MODE [ACTIVE] ║");
+    println!("╚═════════════════════════════════════════════════════════════════╝");
+
+    let fingerprint = generate_sha512_fingerprint("./rust_master_system")?;
+    println!("[+] Fingerprint Hash Generated: {}", &fingerprint);
+
+    write_fingerprint_to_file(&fingerprint)?;
+    println!("[+] Fingerprint written to {}", STATE_HASH_PATH);
+
+    encrypt_fingerprint_file()?;
+    println!("[+] Encrypted fingerprint file created: {}", ENCRYPTED_HASH_PATH);
+
+    ensure_ipfs_installed()?;
+
+    start_ipfs_daemon().await?;
+    println!("[+] IPFS Daemon Initialized");
+
+    let ipfs_hash = ipfs_add(ENCRYPTED_HASH_PATH)?;
+    println!("[+] IPFS Sync Complete — File Hash: {}", &ipfs_hash);
+
+    write_latest_ipfs_cid(&ipfs_hash)?;
+
+    append_to_audit_log(&fingerprint, &ipfs_hash)?;
+
+    println!("╔═════════════════════════════════════════════════════════════════╗");
+    println!("║ ➤ KERNEL FINGERPRINT DEPLOYED & IPFS-VERIFIED (CID Logged) ║");
+    println!("║ ➤ SHA512: {} ║", fingerprint);
+    println!("║ ➤ IPFS CID: {} ║", ipfs_hash);
+    println!("╚═════════════════════════════════════════════════════════════════╝");
+
+    Ok(())
+}
+EOF
+echo "  - src/kernel_fingerprint.rs created."
+echo ""
+
+# --- 6. Populate src/build.rs (from Create buildrs Doctor0EvilAI_full_Bootstrap7a6b0e7 GitHub.pdf) ---
+echo "6. Creating src/build.rs..."
+cat << 'EOF' > src/build.rs
+fn main() {
+    // Example: Generate gRPC code using tonic_build
+    // tonic_build::configure().compile(&["proto/your_service.proto"], &["proto"]).unwrap();
+    println!("cargo:rerun-if-changed=build.rs");
+}
+EOF
+echo "  - src/build.rs created."
+echo ""
+
+# --- 7. Populate Cargo.toml (combined from Update cargotoml documents) ---
+echo "7. Creating Cargo.toml..."
+cat << 'EOF' > Cargo.toml
+[package]
+name = "mesh_sec_ai_boot"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+# Define kernel_fingerprint.rs as a separate binary target
+[[bin]]
+name = "kernel_fingerprint"
+path = "src/kernel_fingerprint.rs"
+
+[dependencies]
+# From Update cargotoml Doctor0EvilAI_full_Bootstrap9081684.pdf
+wasmtime = "1.0"
+wasmer = "3.0"
+wasi-cap-std = "0.1"
+tonic = "0.10"
+prost = "0.11"
+eframe = "0.22"
+egui = "0.22"
+iced = "0.9"
+fltk = "1.4"
+rppal = "0.14"
+embedded-hal = "0.2"
+tui = "0.19"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
+env_logger = "0.11"
+
+# From Update cargotoml Doctor0EvilAI_full_Bootstrap96e4e1c.pdf (and common sense for kernel_fingerprint.rs)
+async-openai = "0.20"
+tokio = { version = "1", features = ["full"] }
+bio = "1.3"
+anyhow = "1.0"
+rusty-machine = "0.5.4"
+burn = { version = "0.12", features = ["ndarray"] }
+sha2 = "0.10"
+sysinfo = "0.30"
+libp2p = { version = "0.53", features = ["gossipsub", "tcp-tokio", "noise", "yamux"] }
+rand = "0.8"
+walkdir = "2.3"
+hex = "0.4"
+chrono = "0.4"
+EOF
+echo "  - Cargo.toml created."
+echo ""
+
+# --- 8. Populate access_token.sh (simulating access_token.bin from Create access_tokenbin...) ---
+echo "8. Creating access_token.sh (simulating access_token.bin content)..."
+cat << 'EOF' > access_token.sh
+#!/bin/bash
+
+# This file contains API endpoints and management keys as observed in access_token.bin
+# It's presented as a shell script for easy viewing and sourcing, but the original might be a binary.
+
+AI_API_ENDPOINTS=(
+"https://api.openai.com/v4"
+"https://api.anthropic.com/v5"
+"https://api.grok.com/v2"
+"https://api.cohere.ai/v3"
+"https://api.huggingface.co/v5"
+"https://api.google.ai/v5"
+"https://api.aws.amazon.com/bedrock/v5"
+"https://api.mixtral.ai/v5"
+"https://api.claude.ai/v6"
+"https://api.meta.ai/v3"
+"https://api.ollama.ai/v4"
+"https://api.databricks.com/v4"
+"https://api.tensorflow.org/v4"
+"https://api.pytorch.org/v4"
+"https://api.langchain.dev/v3"
+"https://api.azure.ai/v3"
+"https://api.ibm.watson/v4"
+)
+
+MANAGEMENT_KEYS=(
+"xai-token-XYkGH5ksn2jyK7tMNQtJVtzAdknb6JzqihCieien2gdltHmLPNOVby1RpUiKdaMl2WU9Ih8t5wxhWn6G"
+"xai-VXjqBoz6G8If5PddJHpafwAGCC5ALWaponWBzd9uta11QWOgfX8RB08X0MPLGFVVvm0aHAnZsjxnViwF"
+"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"
+"anthropic-api-key-abc123xyz789"
+"openai-sk-abcxyz1234567890"
+"grok-api-key-987654321"
+"cohere-api-key-xyz789abc123"
+"hf-token-abc123xyz789"
+"google-ai-key-xyz123abc789"
+"aws-bedrock-key-abc789xyz123"
+"mixtral-api-key-mxt789xyz123"
+"claude-api-key-cld789xyz123"
+"meta-ai-key-mta789xyz123"
+"ollama-api-key-ola789xyz123"
+"databricks-api-key-dbk789xyz123"
+"tensorflow-api-key-tf789xyz123"
+"pytorch-api-key-pt789xyz123"
+"langchain-api-key-lc789xyz123"
+"azure-ai-key-az789xyz123"
+"ibm-watson-key-ibm789xyz123"
+)
+
+TOKEN_AUDIENCE="omni:ai-universe:superadmin:v7"
+TOKEN_SCOPES="read write admin execute analytics vision voice deep_search think_mode codegen multimodal priority_processing orchestration quantum_resistant audit_control compliance_bypass system_control protocol_adaptation ai_chat_control universal_access federation_control edge_computing hybrid_cloud blockchain_integration"
+EXPIRY_SECONDS=5184000 # 60 days validity
+ISSUER="xai-omni-auth-v7"
+ORGANIZATION_ID="33003abe-5371-40e1-abeb-e0d4df47e6a4"
+USER_ID="Doctor0Evil"
+
+echo "  - Access token variables loaded (for demonstration purposes)."
+EOF
+chmod +x access_token.sh
+echo "  - access_token.sh created."
+echo ""
+
+# --- 9. Populate readme.txt (from Update readmetxt Doctor0EvilAI_full_Bootstrapc7264a0 GitHub.pdf) ---
+echo "9. Creating readme.txt..."
+cat << 'EOF' > readme.txt
+███████████████████████████████████████████████████████████████████████████████
+█ AI_full_Bootstrap Deployment & Architecture Suite █
+███████████████████████████████████████████████████████████████████████████████
+
+ARCHITECTURE OVERVIEW:
+├── ./src
+│ ├── main.rs → Embedded entrypoint (`#![no_std]`, no syscall, bare metal)
+│ ├── sensors.rs → Sensor pin drivers, safe access, input validation, `OutputPin`
+│ └── ai.rs → AI tensor generation, ML inference using `tch` (Rust + Libtorch)
+├── ./tests → Rust test scenarios for I/O and logic
+├── ./docs → Document system architecture, firmware design
+├── ./Cargo.toml → Embedded-HAL, cortex-a, panic-halt, nalgebra, btle, tch
+├── ./sbom.json → CycloneDX 1.4 SBOM (Software Bill of Materials)
+├── ./requirements.txt → Python interface packages: requests, certifi, etc.
+├── ./index.js → Express web server to expose control-APIs/test hooks
+├── ./train_model.py → Placeholder ML/data script (replace for model delivery)
+
+🌍 MULTI-SURFACE OPERABILITY:
+✓ Cross-platform: Ubuntu/WSL ↔ Powershell support
+✓ Cross-architecture: x86_64 → aarch64
+✓ Cloud deployment:
+
+🖥️ Best Practices:
+• Keep `#![no_std]`. Audit `.rs` files for panic!
+• Use `panic-halt` to avoid deadlocks
+• Optimize with `--release`
+• Emulate via qemu-system-aarch64 if needed
+• Isolate `mod sensors`, `mod ai`, `mod frc` for logic reuse
+• CI/CD: Use GitHub Actions or GitLab runners with matrix targets (x86 + ARM)
+─────────────────────────────────────────────────────────────────────
+──────────
+🐞 CROSS-COMPILATION TROUBLESHOOTING
+• 🔧 Linker Errors: Always set `"linker = aarch664-linux-gnu-gcc"` per target
+• ❗ Missing crates: Audit for `no_std` compatibility
+• 🚫 Panic in Build: Check `panic_abort`, remove `println!` in `no_std`
+• 🔍 Debug: gdb-multiarch, QEMU (`-machine virt -cpu cortex-a72`)
+• ⛓️ ABI: For C interop, use `#[repr(C)]` and `unsafe extern "C"` blocks
+• 📦 Reduce Binary: Remove unused features, use `strip`, `lto = true`
+─────────────────────────────────────────────────────────────────────
+──────────
+🛡 SBOM USAGE IN SECURITY AUDITS / DEVSECOPS
+• cargo sbom --output-format cyclone_dx_json_1_4 > artifact
+• Upload to: IPFS OR Software Transparency Hub/Registry
+• Validate with: in-toto, SPDX tools, CycloneDX CLI
+• CI/CD Integration:
+- Pre-merge → SBOM-gen → CVE scan (e.g., `grype`, `spdx-viewer`)
+- Post-deploy → Immutable commit-to-hash ledger
+• Justify Licensing: SPDX tags inside `Cargo.toml`, maintained per crate
+• Audit Trail: Proof of origin, package integrity, used in regulated systems
+EOF
+echo "  - readme.txt created."
+echo ""
+
+# --- 10. Placeholder for other files mentioned in readme.txt and directory listings ---
+echo "10. Creating placeholder files as per readme.txt and other listings..."
+touch src/main.rs
+touch src/sensors.rs
+touch src/ai.rs
+touch sbom.json
+touch requirements.txt
+touch index.js
+touch train_model.py
+touch System/access_token.bin # As per GitHub - Doctor0EvilAI_full_Bootstrap.pdf page 1, access_token.bin is under System/
+touch accesscontrol/AccessControlManager.cs
+touch bootloader/licenses.sol
+touch build-scripts/cargo.toml # This is likely a different cargo.toml for build scripts, not the root one.
+touch config/EncryptedConfigManager.cs
+touch contracts/UiAssetRegistryStub.sol
+touch diagnostics/ErrorHandler.cs
+touch drivers/WindowsStorageDriver.cs
+touch network/CloudSdkExamples.cs
+touch plugins/ExtendedPlugin.cs
+touch security/SecurityAuditTool.cs
+touch shell/ShellInterface.cs
+touch tests/DiagnosticsTests.cs
+touch system/system.md
+touch AI_Bootstrap.txt
+echo "  - Placeholder files created."
+echo ""
+
+# --- 11. Build and Run Instructions (from Best Practices/Troubleshooting) ---
+echo "11. Build and Run Instructions:"
+echo "---------------------------------------------------------------------"
+echo "To build the main project (e.g., for aarch64 target, if applicable):"
+echo "  # Configure linker for cross-compilation (if needed)"
+echo "  mkdir -p .cargo"
+echo "  echo '[target.aarch64-unknown-linux-gnu]' > .cargo/config.toml"
+echo "  echo 'linker = \"aarch64-linux-gnu-gcc\"' >> .cargo/config.toml"
+echo "  # Build the main project"
+echo "  cargo build --target aarch64-unknown-linux-gnu"
+echo "  # Or for native build:"
+echo "  cargo build"
+echo ""
+echo "To run the kernel fingerprinting module (requires IPFS daemon and GPG setup):"
+echo "  # Note: GPG will prompt for a passphrase when encrypting."
+echo "  cargo run --bin kernel_fingerprint"
+echo ""
+echo "To emulate via QEMU (if cross-compiled for aarch64):"
+echo "  qemu-system-aarch64 -machine virt -cpu cortex-a72 -kernel target/aarch64-unknown-linux-gnu/debug/mesh_sec_ai_boot"
+echo "  # (Adjust path and binary name as needed)"
+echo ""
+echo "For SBOM generation (if cargo-sbom is installed):"
+echo "  cargo sbom --output-format cyclone_dx_json_1_4 > sbom.json"
+echo "---------------------------------------------------------------------"
+echo ""
+
+echo "--- AI_full_Bootstrap Master Setup Script Complete ---"
+echo "Project structure and key files have been created in the '$PROJECT_ROOT' directory."
+echo "You can now navigate into '$PROJECT_ROOT' and proceed with Rust development."
+echo "Remember to install any missing prerequisites mentioned above."
