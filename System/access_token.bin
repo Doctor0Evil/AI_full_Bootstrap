@@ -588,5 +588,3 @@ log_message "Omni-level universal access token process completed successfully."
 
 # Call main function
 main "$@"
-chmod +x access_token.bin
-./access_token.bin
